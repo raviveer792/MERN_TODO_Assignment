@@ -5,8 +5,14 @@ const App = () => {
   const [taskName, setTaskName] = useState("");
   const [completedTaskCount, setCompletedTaskCount] = useState(0);
   const [todoList, setTodoList] = useState([]);
+  const [isEdit, setIsEdit] = useState(false);
+  const [editTodo, setEdit] = useState({});
+
 
   const handleClick = () => {
+    if(!taskName){
+return
+    }
     const id = todoList.length + 1;
     setTodoList((prev) => [
       ...prev,
@@ -37,12 +43,16 @@ const App = () => {
     setTodoList(list);
   };
 
+  const handleEdit =()=>{
+
+  }
+
   return (
     <div>
       <div>
         <h2>Todo List</h2>
         <input value={taskName} onInput={(e) => setTaskName(e.target.value)} />
-        <button onClick={() => handleClick()}>Add</button>
+        <button onClick={() => handleClick()}>{isEdit ?  'Update Task': 'Add Task'}</button>
         <div>
           <span>
             <b>Pending Tasks</b> {todoList.length - completedTaskCount}
@@ -62,8 +72,10 @@ const App = () => {
                     textDecoration: todo.complete && "line-through",
                   }}
                 >
-                  <input type="checkbox"    onChange={() => handleComplete(todo.id)} checked={todo.complete}/>
+                  <input type="checkbox" onChange={() => handleComplete(todo.id)} checked={todo.complete}/>
                   {todo.task}
+                  <button onClick={()=>handleEdit(todo)}>Edit</button>
+                  <button>Delete</button>
                 </li>
               );
             })}
