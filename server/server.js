@@ -1,12 +1,12 @@
 const express = require("express");
 require("./connector/mongo.connector");
+const todoRouter = require("./routes/todo.routes");
 const app = express();
-const router = express.Router();
 
 app.use(express.json());
-app.use(router);
+app.use("/api/todo", todoRouter);
 
-router.get("/health", (req, res) => {
+app.get("/health", (req, res) => {
   res.send("Healty");
 });
 
