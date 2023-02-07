@@ -3,21 +3,27 @@ const todoModel = require("../model/todo.schema");
 const create = async (req, res) => {
   try {
     const { id, task, isCompleted } = req.body;
-    const session = todoModel({ id, task, isCompleted });
+    const session = new todoModel({ id, task, isCompleted });
     const result = await session.save();
     if (result) res.send({ success: true, data: result });
-    else res.send({ success: false, data: null });
-  } catch (error) {}
-  res.send({ success: false, data: error });
+    else res.status(400).send({ success: false, data: null });
+  } catch (err) {
+    if (err.name === "ValidationError")
+      res
+        .status(400)
+        .send({ success: false, name: err.name, message: err.message });
+    else res.status(500).send({ success: false, data: err });
+  }
 };
 
 const getAll = async (req, res) => {
   try {
-    const result = await todoModel.find();
+    const result = await todoModel.find({});
     if (result) res.send({ success: true, data: result });
-    else res.send({ success: false, data: null });
-  } catch (error) {}
-  res.send({ success: false, data: error });
+    else res.status(400).send({ success: false, data: null });
+  } catch (err) {
+    res.status(500).send({ success: false, data: err });
+  }
 };
 
 const update = async (req, res) => {
@@ -26,22 +32,24 @@ const update = async (req, res) => {
     const result = await todoModel.findOneAndUpdate(
       { id },
       { id, task, isCompleted },
-      { upsert: true }
+      { upsert: true, new: true }
     );
     if (result) res.send({ success: true, data: result });
-    else res.send({ success: false, data: null });
-  } catch (error) {}
-  res.send({ success: false, data: error });
+    else res.status(400).send({ success: false, data: null });
+  } catch (err) {
+    res.status(500).send({ success: false, data: err });
+  }
 };
 
 const remove = async (req, res) => {
   try {
-    const { id } = req.query;
+    const { id } = req.params;
     const result = await todoModel.deleteOne({ id });
-    if (result) res.send({ success: true, data: result });
-    else res.send({ success: false, data: null });
-  } catch (error) {}
-  res.send({ success: false, data: error });
+    if (result.deletedCount) res.send({ success: true, data: result });
+    else res.status(400).send({ success: false, data: null });
+  } catch (err) {
+    res.status(500).send({ success: false, data: err });
+  }
 };
 
 module.exports = { create, getAll, update, remove };

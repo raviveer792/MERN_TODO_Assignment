@@ -13,6 +13,6 @@ router.get("/", getAll);
 
 router.put("/", update);
 
-router.delete("/", remove);
+router.delete("/:id", remove);
 
 module.exports = router;
