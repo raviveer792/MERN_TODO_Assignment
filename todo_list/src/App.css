@@ -11,7 +11,7 @@ button {
   background-color: teal;
   color: white;
   height: 30px;
-  width: 50px;
+  /* width: 50px; */
   border-radius: 2px;
   cursor: pointer;
 }

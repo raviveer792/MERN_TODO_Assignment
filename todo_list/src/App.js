@@ -18,10 +18,18 @@ const App = () => {
     fetchTodos();
   }, []);
 
+  useEffect(() => {
+    // fetchTodos();
+    setCompletedTaskCount(todoList.filter((todo) => todo.isCompleted).length);
+  }, [todoList]);
+
   async function fetchTodos() {
     try {
       const { data } = await getTodos();
-      setTodoList(data);
+      setCompletedTaskCount(
+        data.data.filter((todo) => todo.isCompleted).length
+      );
+      setTodoList(data.data);
     } catch (error) {
       console.log(error);
     }
@@ -32,37 +40,27 @@ const App = () => {
       return;
     }
     if (isEdit) {
-      try {
-        await updateTodo({
-          id: todo.id,
-          task: taskName,
-          isComplete: todo.complete,
-        });
-
-        setTodoList((prev) => [
-          ...prev,
-          {
-            id: todo.id,
-            task: taskName,
-            complete: todo.complete,
-          },
-        ]);
-        setIsEdit(false);
-      } catch (error) {}
+      await update({
+        id: editTodo.id,
+        task: taskName,
+        isCompleted: editTodo.isCompleted,
+      });
+      fetchTodos();
+      setIsEdit(false);
     } else {
       try {
         const id = todoList.length + 1;
         await addTodo({
           id: id,
           task: taskName,
-          isComplete: false,
+          isCompleted: false,
         });
         setTodoList((prev) => [
           ...prev,
           {
             id: id,
             task: taskName,
-            complete: false,
+            isCompleted: false,
           },
         ]);
       } catch (error) {}
@@ -71,29 +69,36 @@ const App = () => {
     setTaskName("");
   };
 
-  const handleComplete = (id) => {
-    let list = todoList.map(async (task) => {
-      let item = {};
-      if (task.id === id) {
-        if (!task.complete) {
-          //Task is pending, modifying it to complete and increment the count
-          setCompletedTaskCount(completedTaskCount + 1);
-        } else {
-          //Task is complete, modifying it back to pending, decrement Complete count
-          setCompletedTaskCount(completedTaskCount - 1);
-        }
-        item = { ...task, complete: !task.complete };
-        await update(task);
-      } else item = { ...task };
-      return item;
-    });
+  const update = async (todo) => {
+    try {
+      await updateTodo({
+        id: todo.id,
+        task: todo.task,
+        isCompleted: todo.isCompleted,
+      });
 
-    setTodoList(list);
+      // await fetchTodos();
+    } catch (error) {}
+  };
+
+  const handleComplete = async (id) => {
+    let item = {};
+    setTodoList((prev) => {
+      return prev.map((todo) => {
+        if (todo.id == id) {
+          item = { ...todo, isCompleted: !todo.isCompleted };
+          return item;
+        }
+        return todo;
+      });
+    });
+    await update(item);
   };
 
   const handleEdit = (todo) => {
     setIsEdit(true);
     setEditTodo(todo);
+    setTaskName(todo.task);
   };
 
   const handleDelete = async (id) => {
@@ -108,44 +113,57 @@ const App = () => {
   return (
     <div>
       <div>
-        <h2>Todo List</h2>
-        <input value={taskName} onInput={(e) => setTaskName(e.target.value)} />
+        <h2> Todo List </h2>{" "}
+        <input value={taskName} onInput={(e) => setTaskName(e.target.value)} />{" "}
         <button onClick={() => handleClick()}>
-          {isEdit ? "Update Task" : "Add Task"}
-        </button>
-        <div>
+          {" "}
+          {isEdit ? "Update Task" : "Add Task"}{" "}
+        </button>{" "}
+       { todoList.length > 0  &&  <div style={{marginTop:'10px'}}>
           <span>
-            <b>Pending Tasks</b> {todoList.length - completedTaskCount}
-          </span>
+            <b> Pending Tasks </b> {todoList.length - completedTaskCount}
+          </span>{" "}
           <span>
-            <b>Completed Tasks</b> {completedTaskCount}
+            <b> Completed Tasks </b> {completedTaskCount}
           </span>
-        </div>
+        </div>}
         <div>
           <ol>
+            {" "}
             {todoList.map((todo) => {
               return (
                 <li
                   id={todo.id}
+                  key={todo._id}
                   style={{
                     listStyle: "none",
-                    textDecoration: todo.complete && "line-through",
+                    marginTop: "10px",
                   }}
                 >
                   <input
+                    style={{ width: "16px" }}
                     type="checkbox"
                     onChange={() => handleComplete(todo.id)}
-                    checked={todo.complete}
-                  />
-                  {todo.task}
-                  <button onClick={() => handleEdit(todo)}>Edit</button>
-                  <button onClick={() => handleDelete(todo.id)}>Delete</button>
+                    checked={todo.isCompleted}
+                  />{" "}
+                  <span
+                    style={{
+                      listStyle: "none",
+                      textDecoration: todo.isCompleted && "line-through",
+                    }}
+                  >  {todo.task}{" "}
+                  </span>
+                  <button onClick={() => handleEdit(todo)}> Edit </button>{" "}
+                  <button onClick={() => handleDelete(todo.id)}>
+                    {" "}
+                    Delete{" "}
+                  </button>{" "}
                 </li>
               );
-            })}
-          </ol>
-        </div>
-      </div>
+            })}{" "}
+          </ol>{" "}
+        </div>{" "}
+      </div>{" "}
     </div>
   );
 };
