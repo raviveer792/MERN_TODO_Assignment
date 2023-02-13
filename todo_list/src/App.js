@@ -47,7 +47,7 @@ const App = () => {
             complete: todo.complete,
           },
         ]);
-        setIsEdit(false)
+        setIsEdit(false);
       } catch (error) {}
     } else {
       try {
@@ -71,7 +71,6 @@ const App = () => {
     setTaskName("");
   };
 
-  
   const handleComplete = (id) => {
     let list = todoList.map(async (task) => {
       let item = {};
@@ -140,7 +139,7 @@ const App = () => {
                   />
                   {todo.task}
                   <button onClick={() => handleEdit(todo)}>Edit</button>
-                  <button onClick={() => handleEdit(todo.id)}>Delete</button>
+                  <button onClick={() => handleDelete(todo.id)}>Delete</button>
                 </li>
               );
             })}
